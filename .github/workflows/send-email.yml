@@ -1,0 +1,24 @@
+name: Send Email Notification
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '*.md'
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: AI Daily Report Updated
+          body: The AI Daily report has been updated. Check the latest changes at ${{ github.server_url }}/${{ github.repository }}/commits/${{ github.sha }}
+          to: your-email@example.com
+          from: GitHub Actions <noreply@github.com>

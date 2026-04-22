@@ -26,11 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install anthropic
+          # Note: Claude Code should be pre-installed or installed via npm if available
+          # Assuming claude command is available in the environment
 
       - name: Generate AI Daily report
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python generate_report.py
 
       - name: Commit and push report

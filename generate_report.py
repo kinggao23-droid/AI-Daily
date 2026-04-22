@@ -1,21 +1,16 @@
 import os
-import requests
-from datetime import datetime
-from anthropic import Anthropic
 import subprocess
+from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 
 # Configuration
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 RECIPIENT_EMAIL = 'kinggao23@gmail.com'
 
 def generate_report():
     try:
-        client = Anthropic(api_key=ANTHROPIC_API_KEY)
-        
         prompt = """
         Generate a daily AI technology report in Chinese, similar to previous reports.
         Include sections: 今日要闻, 热门开源项目, 产品动态, 趋势洞察与行动建议.
@@ -23,16 +18,24 @@ def generate_report():
         Format as Markdown.
         """
         
-        response = client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=4000,
-            messages=[{"role": "user", "content": prompt}]
+        # Use Claude Code to generate the report
+        result = subprocess.run(
+            ['claude', prompt],
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minutes timeout
         )
         
-        report = response.content[0].text
+        if result.returncode == 0:
+            report = result.stdout.strip()
+        else:
+            raise Exception(f"Claude Code failed: {result.stderr}")
+        
         return report
-    except Exception as e:
-        raise Exception(f"Failed to generate report: {e}")
+    except subprocess.TimeoutExpired:
+        raise Exception("Claude Code timed out")
+    except FileNotFoundError:
+        raise Exception("Claude command not found. Ensure Claude Code is installed and in PATH.")
 
 def save_report(report):
     date = datetime.now().strftime('%Y-%m-%d')

@@ -20,5 +20,5 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: AI Daily Report Updated
           body: The AI Daily report has been updated. Check the latest changes at ${{ github.server_url }}/${{ github.repository }}/commits/${{ github.sha }}
-          to: your-email@example.com
+          to: kinggao23@gmail.com
           from: GitHub Actions <noreply@github.com>

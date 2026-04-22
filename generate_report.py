@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 EMAIL_USERNAME = os.getenv('EMAIL_USERNAME')
 EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
-RECIPIENT_EMAIL = 'your-email@example.com'
+RECIPIENT_EMAIL = 'kinggao23@gmail.com'
 
 def generate_report():
     try:

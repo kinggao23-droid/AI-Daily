@@ -9,10 +9,17 @@ This repository contains automated daily AI technology reports.
    pip install anthropic
    ```
 
-2. Set environment variables:
-   - `ANTHROPIC_API_KEY`: Your Anthropic API key (ensure it's valid and has credits)
-   - `EMAIL_USERNAME`: Your Gmail username
-   - `EMAIL_PASSWORD`: Your Gmail app password (not regular password)
+2. Set environment variables (required for script to work):
+   - `ANTHROPIC_API_KEY`: Your Anthropic API key (ensure it's valid and has credits). Get from https://console.anthropic.com/
+   - `EMAIL_USERNAME`: Your Gmail username (e.g., yourname@gmail.com)
+   - `EMAIL_PASSWORD`: Your Gmail app password (not regular password). Generate at https://myaccount.google.com/apppasswords
+
+   Set them in your shell:
+   ```bash
+   export ANTHROPIC_API_KEY="your_key_here"
+   export EMAIL_USERNAME="your_email@gmail.com"
+   export EMAIL_PASSWORD="your_app_password"
+   ```
 
 3. For GitHub Actions email notification, set secrets in repository settings:
    - `EMAIL_USERNAME`
@@ -22,12 +29,16 @@ This repository contains automated daily AI technology reports.
 4. Schedule the script to run daily at 9 AM using cron:
    ```bash
    crontab -e
-   # Add: 0 9 * * * cd /path/to/repo && /path/to/python generate_report.py
+   # Add: 0 9 * * * cd /path/to/repo && export ANTHROPIC_API_KEY="your_key" && export EMAIL_USERNAME="your_email" && export EMAIL_PASSWORD="your_pass" && /usr/bin/python3 generate_report.py >> /path/to/log.txt 2>&1
    ```
 
 5. Test the script manually:
    ```bash
-   python generate_report.py
+   cd /path/to/repo
+   export ANTHROPIC_API_KEY="your_key"
+   export EMAIL_USERNAME="your_email"
+   export EMAIL_PASSWORD="your_pass"
+   python3 generate_report.py
    ```
 
 ## Troubleshooting

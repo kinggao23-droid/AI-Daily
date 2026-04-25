@@ -10,6 +10,7 @@
 用法:
   python3 send_notification.py <general.md> <llmops.md>
 """
+from __future__ import annotations
 import base64
 import hashlib
 import hmac
@@ -242,7 +243,7 @@ def main():
     # 飞书
     feishu_webhook = os.environ.get("FEISHU_WEBHOOK", "").strip()
     feishu_secret = os.environ.get("FEISHU_SECRET", "").strip() or None
-    if feishu_webhook:
+    if feishu_webhook and "YOUR_WEBHOOK_KEY" not in feishu_webhook:
         try:
             send_feishu(feishu_webhook, feishu_secret, title,
                        general_summary, llmops_summary,
@@ -250,18 +251,18 @@ def main():
         except Exception as e:
             print(f"❌ 飞书异常: {e}")
     else:
-        print("⚠️  FEISHU_WEBHOOK 未设置, 跳过飞书")
+        print("⚠️  FEISHU_WEBHOOK 未设置或仍为模板占位符, 跳过飞书")
 
     # Bark
     bark_url = os.environ.get("BARK_URL", "").strip()
-    if bark_url:
+    if bark_url and "YOUR_BARK_KEY" not in bark_url:
         try:
             bark_body = f"综合版要闻:\n{general_summary[:200]}\n\nLLMOps:\n{llmops_summary[:150]}"
             send_bark(bark_url, title, bark_body, general_url)
         except Exception as e:
             print(f"❌ Bark 异常: {e}")
     else:
-        print("⚠️  BARK_URL 未设置, 跳过 Bark")
+        print("⚠️  BARK_URL 未设置或仍为模板占位符, 跳过 Bark")
 
 
 if __name__ == "__main__":

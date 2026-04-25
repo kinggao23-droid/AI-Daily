@@ -1,0 +1,16 @@
+# 防止意外提交本地敏感文件
+.env
+.env.local
+*.key
+secrets.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store

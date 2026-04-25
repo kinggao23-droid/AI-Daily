@@ -1,45 +1,96 @@
 # AI Daily Report
 
-This repository contains automated daily AI technology reports.
+每日自动生成的 AI 行业 + LLMOps 竞品情报日报，每天北京时间 **09:00** 通过 GitHub Actions 自动生成 + 邮件推送。
 
-## Setup
+---
 
-1. Install dependencies (for local testing):
-   ```bash
-   # No Python dependencies needed, but ensure Claude Code is installed
-   ```
+## 📁 仓库结构
 
-2. Ensure Claude Code is installed and authenticated:
-   - Install Claude Code: Follow instructions at https://docs.anthropic.com/claude/docs/claude-code
-   - Authenticate with your Claude Max account.
+```
+.
+├── 2026-MM-DD.md            ← 综合版日报 (今日要闻/技术原理/产品启示)
+├── llmops/
+│   └── 2026-MM-DD.md        ← LLMOps 竞品情报日报 (国内外平台动向)
+├── generate_report.py       ← 日报生成 + 邮件发送脚本
+├── .github/workflows/
+│   └── daily.yml            ← GitHub Actions 工作流 (每天 09:00 北京时间触发)
+├── SETUP_GUIDE.md           ← 配置指南 (Secrets、Gmail 应用密码等)
+└── README.md                ← 本文档
+```
 
-3. For GitHub Actions automation, ensure the runner has Claude Code installed (may require custom setup).
+---
 
-4. For email notification, set secrets in repository settings:
-   - `EMAIL_USERNAME`: Your Gmail username
-   - `EMAIL_PASSWORD`: Your Gmail app password
+## 🚀 快速开始
 
-5. The report is now automatically generated daily at 9 AM Beijing time (1 AM UTC) via GitHub Actions using Claude Code.
+如果你 **首次使用** 或 **从其他设备 fork** 本仓库, 请按 [SETUP_GUIDE.md](./SETUP_GUIDE.md) 完成配置 (大约 5 分钟)。
 
-6. Test the script manually (optional):
-   ```bash
-   cd /path/to/repo
-   export EMAIL_USERNAME="your_email"
-   export EMAIL_PASSWORD="your_pass"
-   python3 generate_report.py
-   ```
+简要步骤:
+1. 在 GitHub 仓库 Settings → Secrets 设置 3 个密钥:
+   - `ANTHROPIC_API_KEY` (Claude API Key)
+   - `EMAIL_USERNAME` (你的 Gmail)
+   - `EMAIL_PASSWORD` (Gmail 应用专用密码, 不是登录密码)
+2. 进入 Actions → AI Daily Report → Run workflow 手动触发一次, 验证流程
+3. 等明天 09:00 自动收邮件
 
-## Troubleshooting
+---
 
-- **Reports stop generating**: Check if Claude Code is installed and authenticated. Ensure your Claude Max permissions are active.
-- **Claude command not found**: Install Claude Code and add to PATH.
-- **Network issues**: Ensure internet connectivity for Claude Code to work.
-- **Email issues**: Verify Gmail app password and SMTP settings.
-- **Git issues**: Ensure git is configured with user.name and user.email.
-- **Run manually**: Test with `python generate_report.py` and check output.
-- **Check logs**: Add logging to script for better debugging.
+## 📅 日报格式
 
-## Files
+### 综合版 (`<日期>.md`)
 
-- `generate_report.py`: Sample script to generate report using Claude API, commit to repo, and send email.
-- `.github/workflows/send-email.yml`: GitHub Action to send email on push.
+```
+# AI 技术日报 - YYYY年MM月DD日
+
+## 一、今日要闻 (4-5 条)
+   每条包含: 概述 + 核心技术原理 + 对产品的启示
+
+## 二、热门开源项目
+
+## 三、产品动态 (表格)
+
+## 四、趋势洞察与行动建议
+```
+
+### LLMOps 竞品情报版 (`llmops/<日期>.md`)
+
+```
+# LLMOps 竞品情报日报
+
+## 1. 今日要闻 (3 条)
+   每条包含: 平台 + 时间 + 具体更新 + 设计理念解读 + 影响分析 + 链接
+
+## 2. 功能创新追踪 (含横向对比表 + 重点功能深度解读)
+
+## 3. 价格与商业动态
+
+## 4. 平台/工具新动向
+
+## 5. 对产品经理的启示 (4-5 条 actionable 建议)
+```
+
+---
+
+## ⚙️ 技术栈
+
+- **生成**: Anthropic Claude API (启用 Web Search 工具,获取实时信息)
+- **调度**: GitHub Actions (cron `0 1 * * *` UTC = 09:00 北京时间)
+- **存储**: 本仓库 (永久归档)
+- **推送**: Gmail SMTP
+
+---
+
+## 🛠️ 自定义
+
+- **改时间**: 编辑 `.github/workflows/daily.yml` 的 cron 表达式
+- **改格式**: 编辑 `generate_report.py` 顶部的 `GENERAL_DAILY_PROMPT` / `LLMOPS_DAILY_PROMPT`
+- **改模型**: 在仓库 Variables 里设置 `CLAUDE_MODEL`, 默认 `claude-opus-4-7`
+- **加通道** (飞书/企微/Bark): 在 `generate_report.py` 末尾增加对应 webhook 调用
+
+详见 [SETUP_GUIDE.md](./SETUP_GUIDE.md)。
+
+---
+
+## 📝 维护历史
+
+- **2026-04-25**: 重建自动化 — 真正的 GitHub Actions + Anthropic API (含 Web Search) + Gmail SMTP 链路
+- **历史归档**: 仓库内 4-19 / 4-20 / 4-22 等历史日报为人工编辑版本, 保留作为格式参考

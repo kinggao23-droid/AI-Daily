@@ -1,6 +1,15 @@
 # AI Daily Report
 
-每日自动生成的 AI 行业 + LLMOps 竞品情报日报，每天北京时间 **09:00** 通过 GitHub Actions 自动生成 + 邮件推送。
+每日自动生成的 AI 行业 + LLMOps 竞品情报日报。
+
+**核心特点**：
+
+- 🚀 用 **macOS launchd 定时任务** 驱动，**完全使用你的 Claude Max 订阅**（无 API Key 费用）
+- 📅 每天北京时间 **18:00** 自动触发
+- 🔍 Claude Code 实时调用 **WebSearch** 抓取最新行业动态
+- 📰 同时生成两份日报：综合版 + LLMOps 竞品情报版
+- 📨 推送到 **飞书群机器人** + **iPhone Bark App**
+- 💾 永久归档到本 GitHub 仓库
 
 ---
 
@@ -8,29 +17,33 @@
 
 ```
 .
-├── 2026-MM-DD.md            ← 综合版日报 (今日要闻/技术原理/产品启示)
-├── llmops/
-│   └── 2026-MM-DD.md        ← LLMOps 竞品情报日报 (国内外平台动向)
-├── generate_report.py       ← 日报生成 + 邮件发送脚本
-├── .github/workflows/
-│   └── daily.yml            ← GitHub Actions 工作流 (每天 09:00 北京时间触发)
-├── SETUP_GUIDE.md           ← 配置指南 (Secrets、Gmail 应用密码等)
-└── README.md                ← 本文档
+├── 2026-MM-DD.md                       ← 综合版日报 (auto-generated)
+├── llmops/2026-MM-DD.md                ← LLMOps 竞品情报版 (auto-generated)
+├── scripts/
+│   ├── run_daily.sh                    ← 主入口脚本 (launchd 调用)
+│   ├── prompts/
+│   │   ├── general.md                  ← 综合版提示词模板
+│   │   └── llmops.md                   ← LLMOps 专题提示词模板
+│   └── send_notification.py            ← 飞书 + Bark 推送逻辑
+├── launchd/
+│   └── com.kinggao.ai-daily.plist      ← macOS launchd 定时配置
+├── .ai-daily.env.example               ← 凭据模板 (填飞书/Bark URL)
+├── README.md
+└── SETUP_GUIDE.md                      ← 详细配置指南 (10 分钟搞定)
 ```
 
 ---
 
 ## 🚀 快速开始
 
-如果你 **首次使用** 或 **从其他设备 fork** 本仓库, 请按 [SETUP_GUIDE.md](./SETUP_GUIDE.md) 完成配置 (大约 5 分钟)。
+详细步骤见 [SETUP_GUIDE.md](./SETUP_GUIDE.md)，简要 6 步：
 
-简要步骤:
-1. 在 GitHub 仓库 Settings → Secrets 设置 3 个密钥:
-   - `ANTHROPIC_API_KEY` (Claude API Key)
-   - `EMAIL_USERNAME` (你的 Gmail)
-   - `EMAIL_PASSWORD` (Gmail 应用专用密码, 不是登录密码)
-2. 进入 Actions → AI Daily Report → Run workflow 手动触发一次, 验证流程
-3. 等明天 09:00 自动收邮件
+1. clone 仓库到 `~/AI-Daily`
+2. 配置飞书自定义机器人 → 拿 webhook URL
+3. iPhone 安装 Bark App → 拿推送 URL
+4. 填 `~/.ai-daily.env`（飞书 + Bark 凭据）
+5. `cp launchd/com.kinggao.ai-daily.plist ~/Library/LaunchAgents/` + `launchctl bootstrap`
+6. 立即测试：`launchctl kickstart -p gui/$(id -u)/com.kinggao.ai-daily`
 
 ---
 
@@ -56,35 +69,34 @@
 ```
 # LLMOps 竞品情报日报
 
-## 1. 今日要闻 (3 条)
-   每条包含: 平台 + 时间 + 具体更新 + 设计理念解读 + 影响分析 + 链接
+## 1. 今日要闻 (3 条, 每条含 设计理念解读 + 影响分析)
 
-## 2. 功能创新追踪 (含横向对比表 + 重点功能深度解读)
+## 2. 功能创新追踪 (横向对比表 + 重点功能深度解读)
 
 ## 3. 价格与商业动态
 
 ## 4. 平台/工具新动向
 
-## 5. 对产品经理的启示 (4-5 条 actionable 建议)
+## 5. 对产品经理的启示 (4-5 条 actionable, 含"竞品短板就是你的机会点")
 ```
 
 ---
 
 ## ⚙️ 技术栈
 
-- **生成**: Anthropic Claude API (启用 Web Search 工具,获取实时信息)
-- **调度**: GitHub Actions (cron `0 1 * * *` UTC = 09:00 北京时间)
-- **存储**: 本仓库 (永久归档)
-- **推送**: Gmail SMTP
+- **生成**：Claude Code (`claude --print` headless 模式) + WebSearch 工具
+- **调度**：macOS launchd (`StartCalendarInterval` 18:00)
+- **存储**：本 GitHub 仓库 (永久归档)
+- **推送**：飞书自定义机器人 + Bark iOS App
 
 ---
 
 ## 🛠️ 自定义
 
-- **改时间**: 编辑 `.github/workflows/daily.yml` 的 cron 表达式
-- **改格式**: 编辑 `generate_report.py` 顶部的 `GENERAL_DAILY_PROMPT` / `LLMOPS_DAILY_PROMPT`
-- **改模型**: 在仓库 Variables 里设置 `CLAUDE_MODEL`, 默认 `claude-opus-4-7`
-- **加通道** (飞书/企微/Bark): 在 `generate_report.py` 末尾增加对应 webhook 调用
+- **改时间**：编辑 `launchd/com.kinggao.ai-daily.plist` 的 `Hour` 字段
+- **改提示词**：编辑 `scripts/prompts/general.md` 或 `scripts/prompts/llmops.md`
+- **加新通道**（企微/Telegram/邮件）：在 `scripts/send_notification.py` 里加一个 `send_xxx` 函数
+- **改关注的竞品**：编辑 `scripts/prompts/llmops.md` 顶部的"重点关注的竞品"清单
 
 详见 [SETUP_GUIDE.md](./SETUP_GUIDE.md)。
 
@@ -92,5 +104,5 @@
 
 ## 📝 维护历史
 
-- **2026-04-25**: 重建自动化 — 真正的 GitHub Actions + Anthropic API (含 Web Search) + Gmail SMTP 链路
-- **历史归档**: 仓库内 4-19 / 4-20 / 4-22 等历史日报为人工编辑版本, 保留作为格式参考
+- **2026-04-25**: 重建自动化 — 从虚假的 GitHub Actions 改为真实的 macOS launchd + Claude Code 订阅方案，新增飞书 + Bark 推送
+- **历史归档**：仓库内 4-19 / 4-20 / 4-22 等历史日报为人工编辑版本，保留作为格式参考

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AI Daily macOS launchd 配置
+  每天北京时间 18:00 自动触发 (假设你的 Mac 系统时区为 Asia/Shanghai)
+
+  安装步骤:
+    1. 把仓库 clone 到固定路径: ~/AI-Daily
+       git clone git@github.com:kinggao23-droid/AI-Daily.git ~/AI-Daily
+    2. 复制本 plist 到 LaunchAgents 目录:
+       cp ~/AI-Daily/launchd/com.kinggao.ai-daily.plist ~/Library/LaunchAgents/
+    3. 加载到 launchd:
+       launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.kinggao.ai-daily.plist
+    4. 验证:
+       launchctl list | grep ai-daily
+       launchctl print gui/$(id -u)/com.kinggao.ai-daily
+
+  立即触发一次 (不等到 18:00):
+    launchctl kickstart -p gui/$(id -u)/com.kinggao.ai-daily
+
+  查看日志:
+    tail -f ~/Library/Logs/ai-daily/$(date +%Y-%m-%d).log
+
+  禁用/卸载:
+    launchctl bootout gui/$(id -u)/com.kinggao.ai-daily.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.kinggao.ai-daily</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-l</string>
+        <string>-c</string>
+        <string>$HOME/AI-Daily/scripts/run_daily.sh</string>
+    </array>
+
+    <!-- 每天北京时间 18:00 触发 (Mac 系统时区为 Asia/Shanghai 时) -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>18</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- 加载 plist 时不立即运行 (改为 true 可以立刻测试一次) -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- 工作目录 -->
+    <key>WorkingDirectory</key>
+    <string>${HOME}/AI-Daily</string>
+
+    <!-- 标准输出/错误日志 -->
+    <key>StandardOutPath</key>
+    <string>${HOME}/Library/Logs/ai-daily/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>${HOME}/Library/Logs/ai-daily/launchd.err.log</string>
+
+    <!-- 环境变量: 确保 PATH 包含必要二进制路径 -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>LANG</key>
+        <string>zh_CN.UTF-8</string>
+    </dict>
+
+    <!-- 进程退出后是否自动重启 (我们是定时任务, 不需要 keep-alive) -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- 即使 Mac 处于睡眠状态, 时间到了也尝试唤醒并执行 -->
+    <key>WakeFromSleep</key>
+    <true/>
+</dict>
+</plist>

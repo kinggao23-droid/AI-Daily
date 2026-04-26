@@ -143,21 +143,41 @@ echo
 echo "💾 提交到 git..."
 git add "$DATE.md" "llmops/$DATE.md"
 
+PUSH_OK=false
 if git diff --cached --quiet; then
     echo "⚠️  没有变化, 跳过提交"
+    # 检查远端是否已有该文件 (可能之前已 push 过)
+    if git ls-remote --exit-code origin refs/heads/main >/dev/null 2>&1; then
+        PUSH_OK=true
+    fi
 else
     git commit -m "chore: AI Daily $DATE (auto-generated)"
-    git push origin main && echo "✅ 已推送到 GitHub" || {
-        echo "⚠️  git push 失败 (本地已 commit, 稍后可手动 push)"
-    }
+    # 重试 push 最多 3 次 (网络偶发抖动)
+    for attempt in 1 2 3; do
+        if git push origin main; then
+            echo "✅ 已推送到 GitHub (第 ${attempt} 次)"
+            PUSH_OK=true
+            break
+        fi
+        echo "⚠️  git push 第 ${attempt} 次失败, 等待 5 秒重试..."
+        sleep 5
+    done
+    if [ "$PUSH_OK" = false ]; then
+        echo "❌ git push 3 次均失败, 跳过通知发送" >&2
+    fi
 fi
 
 # ---------- 推送通知 ----------
-echo
-echo "📨 推送通知..."
-python3 "$SCRIPT_DIR/send_notification.py" "$DATE.md" "llmops/$DATE.md" || {
-    echo "⚠️  通知推送有问题, 但日报已生成"
-}
+if [ "$PUSH_OK" = true ]; then
+    echo
+    echo "📨 推送通知..."
+    python3 "$SCRIPT_DIR/send_notification.py" "$DATE.md" "llmops/$DATE.md" || {
+        echo "⚠️  通知推送有问题, 但日报已生成并推送"
+    }
+else
+    echo
+    echo "⚠️  跳过通知: GitHub 推送未成功, 发通知会导致 404 链接"
+fi
 
 echo
 echo "================================================================"
